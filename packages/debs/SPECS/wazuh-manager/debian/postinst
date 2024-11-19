@@ -162,7 +162,11 @@ case "$1" in
 
     # More files
     touch ${DIR}/etc/client.keys
+    echo "Before chown:"
+    ls -l ${DIR}/etc/client.keys
     chown root:${GROUP} ${DIR}/etc/client.keys
+    echo "After chown:"
+    ls -l ${DIR}/etc/client.keys
 
     touch ${DIR}/logs/active-responses.log
     touch ${DIR}/logs/integrations.log
@@ -241,7 +245,11 @@ case "$1" in
     updateIndexerTemplate "${DIR}/etc/ossec.conf" $CONFIG_INDEXER_TEMPLATE
 
     # Restoring file permissions
-    ${SCRIPTS_DIR}/restore-permissions.sh > /dev/null 2>&1 || true
+    echo "Before restore-permissions.sh:"
+    ls -l ${DIR}/etc/client.keys
+    ${SCRIPTS_DIR}/restore-permissions.sh || true
+    echo "After restore-permissions.sh:"
+    ls -l ${DIR}/etc/client.keys
 
     # Remove old service file /etc/systemd/system/wazuh-manager.service if present
     if [ -f /etc/systemd/system/wazuh-manager.service ]; then

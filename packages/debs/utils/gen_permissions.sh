@@ -24,6 +24,7 @@ BEGIN {
     gsub(q, q q "\\" q);
     f = $0;
     sub(/^[^:]*:[^:]*:[^:]*:/, "", f);
+    print "echo Processing file:", q f q, "with user:group", q $2 ":" $3 q;
     print "chown --", q $2 ":" $3 q, q f q, " > /dev/null 2>&1 || :";
     print "chmod", $1, q f q, " > /dev/null 2>&1 || :";
 }' > $2
