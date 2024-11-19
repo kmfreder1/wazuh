@@ -203,24 +203,28 @@ STATIC void wm_agent_upgrade_check_status(const wm_agent_configs* agent_config) 
     if (queue_fd < 0) {
         mterror(WM_AGENT_UPGRADE_LOGTAG, WM_UPGRADE_QUEUE_FD);
     } else {
-        bool result_available = true;
+        bool result_available = false;
+        unsigned int current_attempt = 0;
+        unsigned int max_attempts = 4; 
         unsigned int wait_time = agent_config->upgrade_wait_start;
         /**
          * This loop will send the upgrade result notification to the manager
          * If the manager is able to update the upgrade status will notify the agent
          * erasing the result file and exiting this loop
          * */
-        while (result_available) {
+        while (!result_available && current_attempt < max_attempts) {
+            
             result_available = wm_upgrade_agent_search_upgrade_result(&queue_fd);
 
-            if(result_available) {
+            if(!result_available) {
                 sleep(wait_time);
-
                 wait_time *= agent_config->upgrade_wait_factor_increase;
                 if (wait_time > agent_config->upgrade_wait_max) {
                     wait_time = agent_config->upgrade_wait_max;
                 }
+                current_attempt += 1;
             }
+
         }
     #ifndef WIN32
         close(queue_fd);
@@ -240,7 +244,7 @@ STATIC bool wm_upgrade_agent_search_upgrade_result(int *queue_fd) {
     if (result_file) {
         if (fgets(buffer, 20, result_file) == NULL) {
             fclose(result_file);
-            return true;
+            return false;
         }
         fclose(result_file);
 
