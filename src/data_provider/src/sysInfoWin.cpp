@@ -1000,8 +1000,8 @@ std::string BstrToString(BSTR bstr)
 void QueryWMIHotFixes(std::set<std::string>& hotfixSet, IComHelper& comHelper)
 {
     HRESULT hres;
-    IWbemLocator* pLoc = NULL;
-    IWbemServices* pSvc = NULL;
+    Microsoft::WRL::ComPtr<IWbemLocator> pLoc = NULL;
+    Microsoft::WRL::ComPtr<IWbemServices> pSvc = NULL;
     std::ostringstream oss;
 
     hres = comHelper.CreateWmiLocator(pLoc);
@@ -1016,7 +1016,7 @@ void QueryWMIHotFixes(std::set<std::string>& hotfixSet, IComHelper& comHelper)
 
     if (FAILED(hres))
     {
-        if (pLoc) pLoc->Release();
+        // pLoc->Release();
 
         oss << "WMI: connection failed. Code: " << std::hex << hres;
         throw std::runtime_error(oss.str());
@@ -1026,28 +1026,28 @@ void QueryWMIHotFixes(std::set<std::string>& hotfixSet, IComHelper& comHelper)
 
     if (FAILED(hres))
     {
-        if (pSvc) pSvc->Release();
+        // if (pSvc) pSvc->Release();
 
-        if (pLoc) pLoc->Release();
+        // pLoc->Release();
 
         oss << "WMI: security error. Code: " << std::hex << hres;
         throw std::runtime_error(oss.str());
     }
 
-    IEnumWbemClassObject* pEnumerator = NULL;
+    Microsoft::WRL::ComPtr<IEnumWbemClassObject> pEnumerator = NULL;
     hres = comHelper.ExecuteWmiQuery(pSvc, pEnumerator);
 
     if (FAILED(hres))
     {
-        if (pLoc) pLoc->Release();
-
-        if (pLoc) pSvc->Release();
+        // pLoc->Release();
+        // pSvc->Release();
+        // pEnumerator->Release();
 
         oss << "WMI: query error. Code: " << std::hex << hres;
         throw std::runtime_error(oss.str());
     }
 
-    IWbemClassObject* pclsObj = NULL;
+    Microsoft::WRL::ComPtr<IWbemClassObject> pclsObj = NULL;
     ULONG uReturn = 0;
 
     while (pEnumerator)
@@ -1074,81 +1074,81 @@ void QueryWMIHotFixes(std::set<std::string>& hotfixSet, IComHelper& comHelper)
         }
 
         VariantClear(&vtProp);
-        pclsObj->Release();
+        // pclsObj->Release();
     }
 
-    pSvc->Release();
-    pLoc->Release();
-    pEnumerator->Release();
+    // pSvc->Release();
+    // pLoc->Release();
+    // pEnumerator->Release();
 }
 
 void QueryWUHotFixes(std::set<std::string>& hotfixSet, IComHelper& comHelper)
 {
-    HRESULT hres;
-    IUpdateSearcher* pUpdateSearcher = NULL;
-    IUpdateHistoryEntryCollection* pHistory = NULL;
-    std::regex hotfixRegex("KB[0-9]+");
-    std::ostringstream oss;
+    // HRESULT hres;
+    // IUpdateSearcher* pUpdateSearcher = NULL;
+    // IUpdateHistoryEntryCollection* pHistory = NULL;
+    // std::regex hotfixRegex("KB[0-9]+");
+    // std::ostringstream oss;
 
-    hres = comHelper.CreateUpdateSearcher(pUpdateSearcher);
+    // hres = comHelper.CreateUpdateSearcher(pUpdateSearcher);
 
-    if (FAILED(hres))
-    {
-        oss << "WUA: UpdateSearcher error. Code: " << std::hex << hres;
-        throw std::runtime_error(oss.str());
-    }
+    // if (FAILED(hres))
+    // {
+    //     oss << "WUA: UpdateSearcher error. Code: " << std::hex << hres;
+    //     throw std::runtime_error(oss.str());
+    // }
 
-    LONG count;
-    hres = comHelper.GetTotalHistoryCount(pUpdateSearcher, count);
+    // LONG count;
+    // hres = comHelper.GetTotalHistoryCount(pUpdateSearcher, count);
 
-    if (FAILED(hres))
-    {
-        if (pUpdateSearcher) pUpdateSearcher->Release();
+    // if (FAILED(hres))
+    // {
+    //     if (pUpdateSearcher) pUpdateSearcher->Release();
 
-        oss << "WUA: Error getting total update history count. Code: 0x" << std::hex << hres;
-        throw std::runtime_error(oss.str());
-    }
+    //     oss << "WUA: Error getting total update history count. Code: 0x" << std::hex << hres;
+    //     throw std::runtime_error(oss.str());
+    // }
 
-    hres = comHelper.QueryHistory(pUpdateSearcher, pHistory, count);
+    // hres = comHelper.QueryHistory(pUpdateSearcher, pHistory, count);
 
-    if (FAILED(hres))
-    {
-        if (pUpdateSearcher) pUpdateSearcher->Release();
+    // if (FAILED(hres))
+    // {
+    //     if (pUpdateSearcher) pUpdateSearcher->Release();
 
-        oss << "WUA: Error querying update history. Code: 0x" << std::hex << hres;
-        throw std::runtime_error(oss.str());
-    }
+    //     oss << "WUA: Error querying update history. Code: 0x" << std::hex << hres;
+    //     throw std::runtime_error(oss.str());
+    // }
 
-    LONG historyCount;
-    hres = comHelper.GetCount(pHistory, historyCount);
+    // LONG historyCount;
+    // hres = comHelper.GetCount(pHistory, historyCount);
 
-    for (LONG i = 0; i < historyCount; ++i)
-    {
-        IUpdateHistoryEntry* pEntry = NULL;
-        comHelper.GetItem(pHistory, i, &pEntry);
-        BSTR title;
-        comHelper.GetTitle(pEntry, title);
-        std::string titleStr = BstrToString(title);
+    // for (LONG i = 0; i < historyCount; ++i)
+    // {
+    //     IUpdateHistoryEntry* pEntry = NULL;
+    //     comHelper.GetItem(pHistory, i, &pEntry);
+    //     BSTR title;
+    //     comHelper.GetTitle(pEntry, title);
+    //     std::string titleStr = BstrToString(title);
 
-        std::smatch match;
+    //     std::smatch match;
 
-        if (std::regex_search(titleStr, match, hotfixRegex))
-        {
-            std::string hotfix = match[0];
+    //     if (std::regex_search(titleStr, match, hotfixRegex))
+    //     {
+    //         std::string hotfix = match[0];
 
-            if (hotfixSet.find(hotfix) == hotfixSet.end())
-            {
-                // New HotFix found
-                hotfixSet.insert(hotfix);
-            }
-        }
+    //         if (hotfixSet.find(hotfix) == hotfixSet.end())
+    //         {
+    //             // New HotFix found
+    //             hotfixSet.insert(hotfix);
+    //         }
+    //     }
 
-        if (pEntry) pEntry->Release();
+    //     if (pEntry) pEntry->Release();
 
-        if (SysFreeString) SysFreeString(title);
-    }
+    //     if (SysFreeString) SysFreeString(title);
+    // }
 
-    if (pHistory) pHistory->Release();
+    // if (pHistory) pHistory->Release();
 
-    if (pUpdateSearcher) pUpdateSearcher->Release();
+    // if (pUpdateSearcher) pUpdateSearcher->Release();
 }

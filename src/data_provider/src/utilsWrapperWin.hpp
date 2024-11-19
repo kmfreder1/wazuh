@@ -11,6 +11,7 @@
 #pragma once
 
 /* Hotfixes APIs */
+#include <wrl/client.h>
 #include <set>
 #include <wbemidl.h>
 #include <wbemcli.h>
@@ -28,18 +29,18 @@ class IComHelper
         virtual ~IComHelper() = default;
 
         // Abstracted methods for WMI functions
-        virtual HRESULT CreateWmiLocator(IWbemLocator*& pLoc) = 0;
-        virtual HRESULT ConnectToWmiServer(IWbemLocator* pLoc, IWbemServices*& pSvc) = 0;
-        virtual HRESULT SetProxyBlanket(IWbemServices* pSvc) = 0;
-        virtual HRESULT ExecuteWmiQuery(IWbemServices* pSvc, IEnumWbemClassObject*& pEnumerator) = 0;
+        virtual HRESULT CreateWmiLocator(Microsoft::WRL::ComPtr<IWbemLocator>& pLoc) = 0;
+        virtual HRESULT ConnectToWmiServer(Microsoft::WRL::ComPtr<IWbemLocator> pLoc, Microsoft::WRL::ComPtr<IWbemServices>& pSvc) = 0;
+        virtual HRESULT SetProxyBlanket(Microsoft::WRL::ComPtr<IWbemServices> pSvc) = 0;
+        virtual HRESULT ExecuteWmiQuery(Microsoft::WRL::ComPtr<IWbemServices> pSvc, Microsoft::WRL::ComPtr<IEnumWbemClassObject>& pEnumerator) = 0;
 
         // Abstracted methods for Windows Update API functions
-        virtual HRESULT CreateUpdateSearcher(IUpdateSearcher*& pUpdateSearcher) = 0;
-        virtual HRESULT GetTotalHistoryCount(IUpdateSearcher* pUpdateSearcher, LONG& count) = 0;
-        virtual HRESULT QueryHistory(IUpdateSearcher* pUpdateSearcher, IUpdateHistoryEntryCollection*& pHistory, LONG& count) = 0;
-        virtual HRESULT GetCount(IUpdateHistoryEntryCollection* pHistory, LONG& count) = 0;
-        virtual HRESULT GetItem(IUpdateHistoryEntryCollection* pHistory, LONG index, IUpdateHistoryEntry** pEntry) = 0;
-        virtual HRESULT GetTitle(IUpdateHistoryEntry* pEntry, BSTR& title) = 0;
+        // virtual HRESULT CreateUpdateSearcher(IUpdateSearcher*& pUpdateSearcher) = 0;
+        // virtual HRESULT GetTotalHistoryCount(IUpdateSearcher* pUpdateSearcher, LONG& count) = 0;
+        // virtual HRESULT QueryHistory(IUpdateSearcher* pUpdateSearcher, IUpdateHistoryEntryCollection*& pHistory, LONG& count) = 0;
+        // virtual HRESULT GetCount(IUpdateHistoryEntryCollection* pHistory, LONG& count) = 0;
+        // virtual HRESULT GetItem(IUpdateHistoryEntryCollection* pHistory, LONG index, IUpdateHistoryEntry** pEntry) = 0;
+        // virtual HRESULT GetTitle(IUpdateHistoryEntry* pEntry, BSTR& title) = 0;
 };
 
 
@@ -70,35 +71,35 @@ class ComHelper : public IComHelper
         }
 
         // Implement Windows Update API functions
-        HRESULT CreateUpdateSearcher(IUpdateSearcher*& pUpdateSearcher) override
-        {
-            return CoCreateInstance(CLSID_UpdateSearcher, NULL, CLSCTX_INPROC_SERVER, IID_IUpdateSearcher, (LPVOID*)&pUpdateSearcher);
-        }
+        // HRESULT CreateUpdateSearcher(IUpdateSearcher*& pUpdateSearcher) override
+        // {
+        //     return CoCreateInstance(CLSID_UpdateSearcher, NULL, CLSCTX_INPROC_SERVER, IID_IUpdateSearcher, (LPVOID*)&pUpdateSearcher);
+        // }
 
-        HRESULT GetTotalHistoryCount(IUpdateSearcher* pUpdateSearcher, LONG& count) override
-        {
-            return pUpdateSearcher->GetTotalHistoryCount(&count);
-        }
+        // HRESULT GetTotalHistoryCount(IUpdateSearcher* pUpdateSearcher, LONG& count) override
+        // {
+        //     return pUpdateSearcher->GetTotalHistoryCount(&count);
+        // }
 
-        HRESULT QueryHistory(IUpdateSearcher* pUpdateSearcher, IUpdateHistoryEntryCollection*& pHistory, LONG& count) override
-        {
-            return pUpdateSearcher->QueryHistory(0, count, &pHistory);
-        }
+        // HRESULT QueryHistory(IUpdateSearcher* pUpdateSearcher, IUpdateHistoryEntryCollection*& pHistory, LONG& count) override
+        // {
+        //     return pUpdateSearcher->QueryHistory(0, count, &pHistory);
+        // }
 
-        HRESULT GetCount(IUpdateHistoryEntryCollection* pHistory, LONG& count) override
-        {
-            return pHistory->get_Count(&count);
-        }
+        // HRESULT GetCount(IUpdateHistoryEntryCollection* pHistory, LONG& count) override
+        // {
+        //     return pHistory->get_Count(&count);
+        // }
 
-        HRESULT GetItem(IUpdateHistoryEntryCollection* pHistory, LONG index, IUpdateHistoryEntry** pEntry) override
-        {
-            return pHistory->get_Item(index, pEntry);
-        }
+        // HRESULT GetItem(IUpdateHistoryEntryCollection* pHistory, LONG index, IUpdateHistoryEntry** pEntry) override
+        // {
+        //     return pHistory->get_Item(index, pEntry);
+        // }
 
-        HRESULT GetTitle(IUpdateHistoryEntry* pEntry, BSTR& title) override
-        {
-            return pEntry->get_Title(&title);
-        }
+        // HRESULT GetTitle(IUpdateHistoryEntry* pEntry, BSTR& title) override
+        // {
+        //     return pEntry->get_Title(&title);
+        // }
 };
 
 // Queries Windows Management Instrumentation (WMI) to retrieve installed hotfixes
